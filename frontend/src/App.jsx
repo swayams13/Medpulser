@@ -5,12 +5,11 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleUpload = async () => {
-    if (!file) return;
-    setLoading(true);
-
+  const upload = async () => {
     const formData = new FormData();
     formData.append("file", file);
+
+    setLoading(true);
 
     const res = await fetch("http://localhost:8000/predict", {
       method: "POST",
@@ -23,31 +22,20 @@ export default function App() {
   };
 
   return (
-    <div style={{
-      background: "#0b0f1a",
-      color: "white",
-      minHeight: "100vh",
-      padding: "30px"
-    }}>
-      <h1>MedPulse – Burnout Intelligence</h1>
+    <div style={{ background: "#0b0f1a", color: "white", minHeight: "100vh", padding: 30 }}>
+      <h1>MedPulse – AI Burnout System</h1>
 
       <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button onClick={handleUpload}>Analyze</button>
+      <button onClick={upload}>Analyze</button>
 
-      {loading && <p>Processing...</p>}
+      {loading && <p>Extracting features...</p>}
 
       {result && (
         <div>
-          <h2>Result</h2>
-          <p>Level: {result.level}</p>
+          <h2>{result.level}</h2>
           <p>Confidence: {result.confidence}%</p>
 
-          <h3>Features</h3>
-          {Object.entries(result.features).map(([k, v]) => (
-            <p key={k}>{k}: {v}</p>
-          ))}
-
-          <h3>Importance</h3>
+          <h3>Explainability</h3>
           {Object.entries(result.importance).map(([k, v]) => (
             <p key={k}>{k}: {v}</p>
           ))}
