@@ -1,34 +1,21 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function App() {
-  const [socket, setSocket] = useState(null);
-  const [messages, setMessages] = useState([]);
+  const [result, setResult] = useState(null);
 
-  useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8000/ws");
-
-    ws.onmessage = (event) => {
-      setMessages((prev) => [...prev, event.data]);
-    };
-
-    setSocket(ws);
-  }, []);
-
-  const sendMessage = () => {
-    socket.send("New burnout update");
+  const testAPI = async () => {
+    const res = await fetch(import.meta.env.VITE_API_URL + "/");
+    const data = await res.json();
+    setResult(data);
   };
 
   return (
-    <div style={{ background: "#0b0f1a", color: "white", minHeight: "100vh", padding: 20 }}>
-      <h1>MedPulse Live Dashboard</h1>
+    <div style={{ background: "#0b0f1a", color: "white", height: "100vh", padding: 30 }}>
+      <h1>MedPulse Live</h1>
 
-      <button onClick={sendMessage}>Trigger Update</button>
+      <button onClick={testAPI}>Test Backend</button>
 
-      <div>
-        {messages.map((msg, i) => (
-          <p key={i}>{msg}</p>
-        ))}
-      </div>
+      {result && <pre>{JSON.stringify(result, null, 2)}</pre>}
     </div>
   );
 }
