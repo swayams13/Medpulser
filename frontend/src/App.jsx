@@ -1,46 +1,34 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 export default function App() {
-  const [file, setFile] = useState(null);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const [messages, setMessages] = useState([]);
 
-  const upload = async () => {
-    const formData = new FormData();
-    formData.append("file", file);
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:8000/ws");
 
-    setLoading(true);
+    ws.onmessage = (event) => {
+      setMessages((prev) => [...prev, event.data]);
+    };
 
-    const res = await fetch("http://localhost:8000/predict", {
-      method: "POST",
-      body: formData,
-    });
+    setSocket(ws);
+  }, []);
 
-    const data = await res.json();
-    setResult(data);
-    setLoading(false);
+  const sendMessage = () => {
+    socket.send("New burnout update");
   };
 
   return (
-    <div style={{ background: "#0b0f1a", color: "white", minHeight: "100vh", padding: 30 }}>
-      <h1>MedPulse – AI Burnout System</h1>
+    <div style={{ background: "#0b0f1a", color: "white", minHeight: "100vh", padding: 20 }}>
+      <h1>MedPulse Live Dashboard</h1>
 
-      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-      <button onClick={upload}>Analyze</button>
+      <button onClick={sendMessage}>Trigger Update</button>
 
-      {loading && <p>Extracting features...</p>}
-
-      {result && (
-        <div>
-          <h2>{result.level}</h2>
-          <p>Confidence: {result.confidence}%</p>
-
-          <h3>Explainability</h3>
-          {Object.entries(result.importance).map(([k, v]) => (
-            <p key={k}>{k}: {v}</p>
-          ))}
-        </div>
-      )}
+      <div>
+        {messages.map((msg, i) => (
+          <p key={i}>{msg}</p>
+        ))}
+      </div>
     </div>
   );
 }
